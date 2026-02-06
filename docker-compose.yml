@@ -1,0 +1,56 @@
+services:
+  web:
+    build: .
+    container_name: cakephp2-app
+    ports:
+      - "8080:80"
+    volumes:
+      - ./app:/app
+    environment:
+      - WEB_DOCUMENT_ROOT=/app/app/webroot
+      - PHP_DATE_TIMEZONE=UTC
+      - PHP_DISPLAY_ERRORS=1
+      - PHP_MEMORY_LIMIT=512M
+    depends_on:
+      - db
+    networks:
+      - cakephp-network
+
+  db:
+    image: mysql:5.7
+    platform: linux/amd64
+    container_name: cakephp2-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: cakephp_db
+      MYSQL_USER: cakephp_user
+      MYSQL_PASSWORD: cakephp_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - cakephp-network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    platform: linux/amd64
+    container_name: cakephp2-phpmyadmin
+    restart: always
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: root
+    depends_on:
+      - db
+    networks:
+      - cakephp-network
+
+networks:
+  cakephp-network:
+    driver: bridge
+
+volumes:
+  db_data:
